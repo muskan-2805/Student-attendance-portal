@@ -24,11 +24,21 @@
 
         .table-container {
             flex: 1;
+            /* Max height adjusted for better layout inside iframe */
+            max-height: calc(100vh - 40px);
             overflow-y: auto;
         }
 
         table {
             width: 100%;
+        }
+         /* Sticky header for the table */
+        #staffTable thead th {
+            position: sticky;
+            top: 0;
+            background-color: #212529;
+            color: white;
+            z-index: 10;
         }
     </style>
 </head>
@@ -49,7 +59,7 @@
                 </tr>
             </thead>
             <tbody id="staffTableBody">
-            </tbody>
+                </tbody>
         </table>
     </main>
 
@@ -62,31 +72,39 @@
         async function loadStaff() {
             try {
                 const res = await fetch('http://localhost:5000/api/staff');
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                
                 const staffList = await res.json();
                 allStaff = staffList;
                 renderStaff(allStaff);
             } catch (error) {
                 console.error('Error fetching staff:', error);
-                staffTableBody.innerHTML = `<tr><td colspan="11" class="text-center text-danger">Failed to load staff data.</td></tr>`;
+                staffTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Failed to load staff data. Please check server status.</td></tr>`;
             }
         }
 
         // Staff को table में render करें
         function renderStaff(staffToDisplay) {
             staffTableBody.innerHTML = '';
-            
-            // Optional: Sort staff members
+
+            // Optional: Sort staff members (your previous logic preserved)
             staffToDisplay.sort((a, b) =>
                 (a.department || "").localeCompare(b.department || "") ||
                 (a.jobTitle || "").localeCompare(b.jobTitle || "")
             );
 
             if (staffToDisplay.length === 0) {
-                staffTableBody.innerHTML = `<tr><td colspan="11" class="text-center text-muted">No staff members found.</td></tr>`;
+                staffTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">No staff members found.</td></tr>`;
                 return;
             }
 
             staffToDisplay.forEach((staff, index) => {
+                // Determine which ID to use for actions (using _id or staffId for robustness)
+                const uniqueId = staff.staffId || staff._id;
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="text-center">${index + 1}</td>
@@ -97,13 +115,22 @@
                     <td>${staff.email || ""}</td>
                     <td>${staff.personalContact || ""}</td>
                     <td class="text-center">
-                        <a href="staffDetails.html?id=${staff.staffId}" class="btn btn-sm btn-info text-white me-2">View</a>
-                        <button onclick="editStaff('${staff.staffId}')" class="btn btn-sm btn-warning me-2">Edit</button>
-                        <button onclick="deleteStaff('${staff.staffId}')" class="btn btn-sm btn-danger">Delete</button>
+                        <a href="#" onclick="viewStaffDetails('${uniqueId}')" class="btn btn-sm btn-info text-white me-2">View</a>
+                        <button onclick="editStaff('${uniqueId}')" class="btn btn-sm btn-warning me-2">Edit</button>
+                        <button onclick="deleteStaff('${uniqueId}')" class="btn btn-sm btn-danger">Delete</button>
                     </td>
                 `;
                 staffTableBody.appendChild(tr);
             });
+        }
+        
+        // 🎯 NEW FUNCTION: Parent index.html को staffDetails.html लोड करने के लिए संदेश भेजें
+        function viewStaffDetails(uniqueId) {
+            window.parent.postMessage({
+                type: 'loadIframeWithParams',
+                url: 'staffDetails.html',
+                params: `?id=${uniqueId}` // यह ID 'staffDetails.html' को भेजी जा रही है
+            }, '*');
         }
 
         // Staff member को delete करें
@@ -118,7 +145,7 @@
                         loadStaff(); // Reload the list
                     } else {
                         const error = await res.json();
-                        alert('Failed to delete staff member: ' + error.msg);
+                        alert('Failed to delete staff member: ' + (error.msg || 'Unknown error.'));
                     }
                 } catch (error) {
                     console.error('Deletion failed:', error);
@@ -127,13 +154,19 @@
             }
         }
 
-        // Edit button functionality
+        // Edit button functionality (Modified to use postMessage)
         function editStaff(staffId) {
-            window.location.href = `addStaff.html?id=${staffId}&edit=1`;
+             window.parent.postMessage({
+                type: 'loadIframeWithParams',
+                url: 'addStaff.html',
+                params: `?id=${staffId}&edit=1` 
+            }, '*');
         }
         
         // Filter logic (received from parent iframe)
         window.addEventListener('message', function(event) {
+             if (!event.data || typeof event.data.type === 'undefined') return;
+
             const data = event.data;
             if (data.type === 'filterStaff') {
                 const { searchStaffId, searchDepartment } = data;

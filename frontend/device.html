@@ -76,7 +76,7 @@
         }, {
             class: "12",
             rfidReaderId: "12"
-        }, ];
+        },];
 
         function renderDevices() {
             const container = document.getElementById('deviceContainer');
@@ -90,9 +90,9 @@
                         <div class="card-body d-flex flex-column justify-content-between">
                             <h5 class="card-title mb-2">Class ${device.class}</h5>
                             <p class="mb-2"><strong>RFID Reader ID:</strong> ${device.rfidReaderId}</p>
-                            <a href="viewAttendance.html?class=${device.class}" class="btn btn-primary mt-auto">
-                                <i class="bi bi-eye"></i> View Attendance
-                            </a>
+                            <a href="#" class="btn btn-primary mt-auto" onclick="viewAttendance('${device.class}')">
+    <i class="bi bi-eye"></i> View Attendance
+</a>
                         </div>
                     </div>
                 `;
@@ -102,5 +102,15 @@
 
         renderDevices();
     </script>
+    <script>function viewAttendance(className) {
+            // Parent Window (index.html) को संदेश भेजें
+            window.parent.postMessage({
+                type: 'loadIframeWithParams',
+                url: 'viewAttendance.html',
+                params: `?class=${className}`
+            }, '*');
+        }
+    </script>
 </body>
+
 </html>

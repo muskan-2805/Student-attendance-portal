@@ -15,9 +15,9 @@ app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB Atlas Database Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB Atlas connected successfully!'))
-  .catch(err => console.error('MongoDB Atlas connection error:', err));
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected successfully!'))
+  .catch(err => console.error('MongoDB  connection error:', err));
 
 // Routes (API Endpoints)
 app.use('/api/auth', require('./routes/auth'));
@@ -26,7 +26,7 @@ app.use('/api/staff', require('./routes/staff'));
 app.use('/api/attendance', require('./routes/attendance'));
 
 // Naye password reset routes ko connect karein
-app.use('/api/auth', require('./routes/forgotPassword'));
+app.use('/api/forgetPassword', require('./routes/forgotPassword'));
 
 // Server ko start karna
 app.listen(PORT, () => {

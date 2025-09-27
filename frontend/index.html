@@ -20,7 +20,7 @@
         /* Extremely subtle hover effect to avoid "chamak" */
         .nav-link-item:hover {
             background-color: rgba(255, 255, 255, 0.05);
-            color: #fff !important;
+            color: #070707 !important;
         }
 
         /* Ensure active link's background doesn't change on hover */
@@ -106,141 +106,160 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const iframe = document.getElementById('iframeContent');
-        const navLinks = document.querySelectorAll('.nav-link-item');
-        const pageTitle = document.getElementById('pageTitle');
-        const pageControls = document.getElementById('pageControls');
-        const backButton = document.getElementById('backButton');
-        const backButtonContainer = document.getElementById('backButtonContainer');
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const iframe = document.getElementById('iframeContent');
+    const navLinks = document.querySelectorAll('.nav-link-item');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageControls = document.getElementById('pageControls');
+    const backButton = document.getElementById('backButton');
+    const backButtonContainer = document.getElementById('backButtonContainer');
 
-        // MAPPING from URL to Page Title
-        const pageTitles = {
-            'dashboard.html': 'Dashboard',
-            'student.html': 'Student',
-            'staff.html': 'Staff',
-            'attendanceLog.html': 'Attendance Logs',
-            'device.html': 'Devices',
-            'user.html': 'User',
-            'addNewStudent.html': 'Add New Student',
-            'addStaff.html': 'Add New Staff',
-            'studentDetails.html': 'Student Details',
-            'staffDetails.html': 'Staff Details',
-            'viewAttendance.html': 'View Attendance'
-        };
+    // MAPPING from URL to Page Title
+    const pageTitles = {
+        'dashboard.html': 'Dashboard',
+        'student.html': 'Student',
+        'staff.html': 'Staff',
+        'attendanceLog.html': 'Attendance Logs',
+        'device.html': 'Devices',
+        'user.html': 'User',
+        'addNewStudent.html': 'Add New Student',
+        'addStaff.html': 'Add New Staff',
+        'studentDetails.html': 'Student Details',
+        'staffDetails.html': 'Staff Details',
+        'viewAttendance.html': 'View Attendance'
+    };
 
-        // MAPPING from sub-page to main page for back button logic
-        const backButtonMappings = {
-            'addNewStudent.html': 'student.html',
-            'addStaff.html': 'staff.html',
-            'studentDetails.html': 'student.html',
-            'staffDetails.html': 'staff.html',
-            'viewAttendance.html': 'device.html'
-        };
+    // MAPPING from sub-page to main page for back button logic
+    const backButtonMappings = {
+        'addNewStudent.html': 'student.html',
+        'addStaff.html': 'staff.html',
+        'studentDetails.html': 'student.html',
+        'staffDetails.html': 'staff.html',
+        'viewAttendance.html': 'device.html' // ✅ 'viewAttendance.html' का पैरेंट 'device.html' है
+    };
 
-        function logout() {
-            localStorage.removeItem('authToken');
-            window.location.href = 'login.html';
+    function logout() {
+        localStorage.removeItem('authToken');
+        window.location.href = 'login.html';
+    }
+
+    // Function to handle loading iframe with parameters (called by postMessage)
+    function loadIframeWithParams(url, params) {
+        loadIframe(url + params);
+    }
+
+    // Centralized function to load iframe content and update all navigation UI
+    function loadIframe(url) {
+        iframe.src = url;
+        
+        // 🎯 FIX 1: URL से Query Parameters (?class=X) को हटाएँ ताकि मैपिंग सही हो
+        const urlParts = url.split('?');
+        const urlFileName = urlParts[0].split('/').pop(); // 'viewAttendance.html' मिलेगा
+        
+        const parentPage = backButtonMappings[urlFileName];
+
+        // Set back button functionality
+        if (parentPage) {
+            // यदि यह कोई Sub-Page है, तो पैरेंट पेज पर वापस जाओ (जैसे devices.html)
+            backButton.onclick = () => loadIframe(parentPage);
+            backButtonContainer.style.display = 'block';
+        } else if (urlFileName === 'dashboard.html') {
+            backButtonContainer.style.display = 'none';
+        } else {
+            // यह मुख्य मेनू पेज (जैसे student.html, device.html) के लिए है
+            // इसे अभी के लिए डैशबोर्ड पर वापस ले जाने के लिए सेट करें, या इसे छिपा दें।
+            backButtonContainer.style.display = 'block';
+            backButton.onclick = () => loadIframe('dashboard.html');
         }
 
-        // Centralized function to load iframe content and update all navigation UI
-        function loadIframe(url) {
-            iframe.src = url;
-            const urlFileName = url.split('/').pop();
-            const parentPage = backButtonMappings[urlFileName];
+        // Update page title and controls
+        pageTitle.textContent = pageTitles[urlFileName] || 'Attendance';
+        loadPageControls(urlFileName);
 
-            // Set back button functionality
-            if (parentPage) {
-                backButton.onclick = () => loadIframe(parentPage);
-                backButtonContainer.style.display = 'block';
-            } else if (urlFileName === 'dashboard.html') {
-                backButtonContainer.style.display = 'none';
-            } else {
-                // This case handles main pages that don't have a parent, like 'student.html'
-                // You can add logic here if you want a back button on the main pages too.
-                backButtonContainer.style.display = 'block';
-                backButton.onclick = () => loadIframe('dashboard.html');
-            }
+        // Update active link in sidebar
+        const baseUrlFileName = urlFileName.split('?')[0]; // Query parameter हटा दिया
 
-            // Update page title and controls
-            pageTitle.textContent = pageTitles[urlFileName] || 'Attendance';
-            loadPageControls(urlFileName);
-
-            // Update active link in sidebar
-            navLinks.forEach(link => {
-                link.classList.remove('active-link');
-                const linkFileName = link.getAttribute('onclick').match(/'(.*?)'/)[1];
-                if (linkFileName === urlFileName || parentPage === linkFileName) {
-                    link.classList.add('active-link');
-                }
-            });
-        }
-
-
-        // Function to load page-specific controls into navbar
-        function loadPageControls(urlFileName) {
-            pageControls.innerHTML = "";
-
-            if (urlFileName === "student.html") {
-                pageControls.innerHTML = `
-                    <a href="#" class="btn btn-primary me-3" onclick="loadIframe('addNewStudent.html')">Add New</a>
-                    <input id="searchClass" class="form-control me-2" type="search" placeholder="Class" style="max-width:120px;">
-                    <input id="searchSection" class="form-control me-2" type="search" placeholder="Section" style="max-width:120px;">
-                    <button class="btn btn-outline-primary me-2" type="button" onclick="filterStudentTable()">Search</button>
-                    <button class="btn btn-outline-secondary" type="button" onclick="resetStudentFilter()">Reset</button>
-                `;
-            }
-
-            if (urlFileName === "staff.html") {
-                pageControls.innerHTML = `
-                    <a href="#" class="btn btn-primary me-3" onclick="loadIframe('addStaff.html')">Add New</a>
-                    <input id="searchStaffId" class="form-control me-2" type="search" placeholder="Staff ID" style="max-width:120px;">
-                    <input id="searchDepartment" class="form-control me-2" type="search" placeholder="Department" style="max-width:120px;">
-                    <button class="btn btn-outline-primary me-2" type="button" onclick="filterStaffTable()">Search</button>
-                    <button class="btn btn-outline-secondary" type="button" onclick="resetStaffFilter()">Reset</button>
-                `;
-            }
-        }
-
-        // New functions to get search values and call the iframe's functions
-        function filterStudentTable() {
-            const searchClass = document.getElementById('searchClass').value;
-            const searchSection = document.getElementById('searchSection').value;
-            iframe.contentWindow.postMessage({ type: 'filterStudents', searchClass, searchSection }, '*');
-        }
-
-        function resetStudentFilter() {
-            document.getElementById('searchClass').value = '';
-            document.getElementById('searchSection').value = '';
-            iframe.contentWindow.postMessage({ type: 'resetStudents' }, '*');
-        }
-
-        function filterStaffTable() {
-            const searchStaffId = document.getElementById('searchStaffId').value;
-            const searchDepartment = document.getElementById('searchDepartment').value;
-            iframe.contentWindow.postMessage({ type: 'filterStaff', searchStaffId, searchDepartment }, '*');
-        }
-
-        function resetStaffFilter() {
-            document.getElementById('searchStaffId').value = '';
-            document.getElementById('searchDepartment').value = '';
-            iframe.contentWindow.postMessage({ type: 'resetStaff' }, '*');
-        }
-
-        // Listen for messages from the iframe to update parent page
-        window.addEventListener('message', function (event) {
-            const data = event.data;
-            if (data.type === 'updateTitle') {
-                pageTitle.textContent = data.title;
+        navLinks.forEach(link => {
+            link.classList.remove('active-link');
+            const linkFileName = link.getAttribute('onclick').match(/'(.*?)'/)[1];
+            
+            // तुलना करते समय, base file name का उपयोग करें (ताकि viewAttendance पर Devices हाईलाइट हो)
+            if (linkFileName === baseUrlFileName || backButtonMappings[baseUrlFileName] === linkFileName) {
+                link.classList.add('active-link');
             }
         });
+    }
 
-        // Handle initial load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadIframe('dashboard.html');
-        });
-    </script>
+
+    // Function to load page-specific controls into navbar
+    function loadPageControls(urlFileName) {
+        pageControls.innerHTML = "";
+
+        if (urlFileName === "student.html") {
+            pageControls.innerHTML = `
+                <a href="#" class="btn btn-primary me-3" onclick="loadIframe('addNewStudent.html')">Add New</a>
+                <input id="searchClass" class="form-control me-2" type="search" placeholder="Class" style="max-width:120px;">
+                <input id="searchSection" class="form-control me-2" type="search" placeholder="Section" style="max-width:120px;">
+                <button class="btn btn-outline-primary me-2" type="button" onclick="filterStudentTable()">Search</button>
+                <button class="btn btn-outline-secondary" type="button" onclick="resetStudentFilter()">Reset</button>
+            `;
+        }
+
+        if (urlFileName === "staff.html") {
+            pageControls.innerHTML = `
+                <a href="#" class="btn btn-primary me-3" onclick="loadIframe('addStaff.html')">Add New</a>
+                <input id="searchStaffId" class="form-control me-2" type="search" placeholder="Staff ID" style="max-width:120px;">
+                <input id="searchDepartment" class="form-control me-2" type="search" placeholder="Department" style="max-width:120px;">
+                <button class="btn btn-outline-primary me-2" type="button" onclick="filterStaffTable()">Search</button>
+                <button class="btn btn-outline-secondary" type="button" onclick="resetStaffFilter()">Reset</button>
+            `;
+        }
+    }
+
+    // New functions to get search values and call the iframe's functions
+    function filterStudentTable() {
+        const searchClass = document.getElementById('searchClass').value;
+        const searchSection = document.getElementById('searchSection').value;
+        iframe.contentWindow.postMessage({ type: 'filterStudents', searchClass, searchSection }, '*');
+    }
+
+    function resetStudentFilter() {
+        document.getElementById('searchClass').value = '';
+        document.getElementById('searchSection').value = '';
+        iframe.contentWindow.postMessage({ type: 'resetStudents' }, '*');
+    }
+
+    function filterStaffTable() {
+        const searchStaffId = document.getElementById('searchStaffId').value;
+        const searchDepartment = document.getElementById('searchDepartment').value;
+        iframe.contentWindow.postMessage({ type: 'filterStaff', searchStaffId, searchDepartment }, '*');
+    }
+
+    function resetStaffFilter() {
+        document.getElementById('searchStaffId').value = '';
+        document.getElementById('searchDepartment').value = '';
+        iframe.contentWindow.postMessage({ type: 'resetStaff' }, '*');
+    }
+
+    // Listen for messages from the iframe to update parent page or load new pages
+    window.addEventListener('message', function (event) {
+        const data = event.data;
+        if (data.type === 'updateTitle') {
+            pageTitle.textContent = data.title;
+        } 
+        
+        // 🎯 Handle the request to load a page with query parameters
+        if (data.type === 'loadIframeWithParams') {
+            loadIframeWithParams(data.url, data.params);
+        }
+    });
+
+    // Handle initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadIframe('dashboard.html');
+    });
+</script>
 </body>
 
 </html>
