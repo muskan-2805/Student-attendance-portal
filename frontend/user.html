@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User Interface</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <style>
+    .nav-link.active {
+      font-weight: bold;
+      border-radius: 6px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row min-vh-100">
+
+      <div class="col-12 p-0">
+        <main class="d-flex flex-column h-100">
+
+          <div class="container-fluid text-center mt-3 ">
+            <div class="row align-content -between d-flex justify-content-around flex-wrap ">
+              <div class="col-12 bg-light"><br>
+                <img src="/frontend/flat-faces-icons-circle-man-6.png" class="card-img-center" alt="..."
+                  style="height: 150px; width: 150px;"><br>
+              </div>
+              <div class="col-12 bg-light ">
+                <h6> Personal Information</h6>
+                <form id="profileForm">
+                  <fieldset disabled>
+                    <div class="container-fluid">
+                      <div class="row">
+                        <div class="col">
+                          <label for="userId" class="form-label ">User ID</label>
+                          <input id="userId" value="12345" class="form-control " aria-describedby="passwordHelpBlock">
+                        </div>
+                        <div class="col">
+                          <label for="fullName" class="form-label ">Full Name</label>
+                          <input id="fullName" value="Mansi Nigam" class="form-control "
+                            aria-describedby="passwordHelpBlock">
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col">
+                          <label for="dob" class="form-label">Date of Birth</label>
+                          <input type="date" id="dob" value="2003-02-03" class="form-control"
+                            aria-describedby="dobHelp">
+
+                        </div>
+
+
+                        <div class="col">
+                          <label for="gender" class="form-label ">Gender</label>
+                          <input id="gender" value="female" class="form-control col-2"
+                            aria-describedby="passwordHelpBlock">
+                        </div>
+                        <div class="col-4 me-auto p-2"><label for="email" class="form-label">Email
+                            address</label>
+                          <input type="email" value="mansi0303@gmail.com" class="form-control" id="email"
+                            aria-describedby="emailHelp">
+                        </div>
+                        <div class="col-2 p-2">
+                          <label for="contact" class="form-label ">Contact Number</label>
+                          <input id="contact" value="9238584947" class="form-control col-2"
+                            aria-describedby="passwordHelpBlock">
+                        </div>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <div class="col-2">
+                    <button class="btn btn-primary d-none" type="submit" id="submitBtn">Submit form</button>
+                  </div>
+
+                  <div class="w-100 d-flex justify-content-end px-4 mt-3">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                      data-bs-target="#exampleModal">
+                      Change Password
+                    </button>
+                    <button type="button" id="editBtn" onclick="toggleEditForm()" class="btn btn-outline-primary ms-3">
+                      Edit Profile
+                    </button>
+                    
+
+                  </div>
+
+                  <div class="text-start p-3">
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                      aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Change Password</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="container">
+                              <div class="row">
+                                <div class="col-12">
+                                  <form>
+                                    <div class="form-group">
+                                      <label for="currentPassword">Current Password</label>
+                                      <input type="password" class="form-control" id="currentPassword"
+                                        placeholder="Password">
+                                    </div>
+                                    <div class="form-group">
+                                      <label for="newPassword">New Password</label>
+                                      <input type="password" class="form-control" id="newPassword" placeholder="Password">
+                                    </div>
+                                    <div class="form-group mb-5">
+                                      <label for="confirmPassword">Confirm Password</label>
+                                      <input type="password" class="form-control" id="confirmPassword"
+                                        placeholder="Password">
+                                    </div>
+
+                                    <h5>Password must:</h5>
+                                    <p>
+                                      - include lower and upper characters<br>
+                                      - include at least 1 number or symbol<br>
+                                      - be at least 8 characters long<br>
+                                      - match in both fields<br>
+                                    </p>
+                                  </form>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Save</button>
+                            <button type="button" class="btn btn-primary">Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+
+
+            </div><br><br>
+
+
+
+
+        </main>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+    crossorigin="anonymous"></script>
+<script>
+    // Ye code page load hone par profile data ko populate karega
+    document.addEventListener('DOMContentLoaded', () => {
+        // localStorage se user data lein
+        const user = JSON.parse(localStorage.getItem('user'));
+        
+        if (!user) {
+            // Agar user data nahi hai, to login page par wapas bhej dein
+            window.location.href = 'login.html'; 
+            return;
+        }
+
+        // Form fields ko dynamic data se fill karein
+        document.getElementById('userId').value = user.id || '';
+        document.getElementById('fullName').value = user.name || '';
+        document.getElementById('email').value = user.email || '';
+        // Date input ke liye sahi format
+        document.getElementById('dob').value = user.dob ? user.dob.substring(0, 10) : ''; 
+        document.getElementById('gender').value = user.gender || '';
+        document.getElementById('contact').value = user.contact || '';
+    });
+
+    function toggleEditForm() {
+        const fieldset = document.querySelector('#profileForm fieldset');
+        const editBtn = document.getElementById('editBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const user = JSON.parse(localStorage.getItem('user'));
+
+        if (fieldset.hasAttribute('disabled')) {
+            fieldset.removeAttribute('disabled');
+            editBtn.textContent = 'Cancel Edit';
+            editBtn.classList.remove('btn-outline-primary');
+            editBtn.classList.add('btn-outline-danger');
+            submitBtn.classList.remove('d-none');
+        } else {
+            fieldset.setAttribute('disabled', true);
+            editBtn.textContent = 'Edit Profile';
+            editBtn.classList.remove('btn-outline-danger');
+            editBtn.classList.add('btn-outline-primary');
+            submitBtn.classList.add('d-none');
+            
+            // Cancel karne par form data ko original data se reset karein
+            if (user) {
+                document.getElementById('fullName').value = user.name || '';
+                document.getElementById('email').value = user.email || '';
+                document.getElementById('dob').value = user.dob ? user.dob.substring(0, 10) : '';
+                document.getElementById('gender').value = user.gender || '';
+                document.getElementById('contact').value = user.contact || '';
+            }
+        }
+    }
+
+    // Profile update ke liye
+    document.getElementById('profileForm').addEventListener('submit', async function (event) {
+        event.preventDefault(); 
+
+        const userId = document.getElementById('userId').value;
+        const fullName = document.getElementById('fullName').value;
+        const dob = document.getElementById('dob').value;
+        const gender = document.getElementById('gender').value;
+        const email = document.getElementById('email').value;
+        const contact = document.getElementById('contact').value;
+        
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token // Authentication token bhejen
+                },
+                body: JSON.stringify({ userId, fullName, dob, gender, email, contact }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Profile updated successfully!');
+                // Naya data localStorage mein save karein
+                localStorage.setItem('user', JSON.stringify(result.user));
+                toggleEditForm(); // Form ko reset karein
+            } else {
+                alert('Error updating profile: ' + result.msg);
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+            alert('Network error. Please try again.');
+        }
+    });
+
+    // Password change ke liye
+    document.querySelector('#exampleModal .btn-secondary').addEventListener('click', async function () {
+        const userId = document.getElementById('userId').value;
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword !== confirmPassword) {
+            alert('Naye passwords match nahi kar rahe hain!');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token // Authentication token bhejen
+                },
+                body: JSON.stringify({ userId, currentPassword, newPassword }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Password successfully changed!');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModal'));
+                modal.hide();
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } else {
+                alert('Password change karne mein error: ' + result.msg);
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+            alert('Network error. Please try again.');
+        }
+    });
+</script>
+  
+</body>
+
+</html>

@@ -1,0 +1,92 @@
+const express = require('express');
+const router = express.Router();
+const Attendance = require('../models/Attendance');
+const Student = require('../models/Student');
+const Staff = require('../models/Staff');
+
+// Get all attendance logs (with optional filters)
+router.get('/', async (req, res) => {
+    try {
+        const { studentId, rfidReaderId, status, date } = req.query;
+        let query = {};
+
+        if (studentId) {
+            query.studentId = studentId;
+        }
+        if (rfidReaderId) {
+            query.rfidReaderId = rfidReaderId;
+        }
+        if (status) {
+            query.status = status;
+        }
+        if (date) {
+            const startOfDay = new Date(date);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(date);
+            endOfDay.setHours(23, 59, 59, 999);
+            query.timestamp = { $gte: startOfDay, $lte: endOfDay };
+        }
+
+        const attendanceLogs = await Attendance.find(query).sort({ timestamp: -1 });
+        res.json(attendanceLogs);
+    } catch (err) {
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
+// Get attendance for a specific student
+router.get('/:studentId', async (req, res) => {
+    try {
+        const attendanceLogs = await Attendance.find({ studentId: req.params.studentId }).sort({ timestamp: -1 });
+        if (attendanceLogs.length === 0) {
+            return res.status(404).json({ msg: 'No attendance records found for this student' });
+        }
+        res.json(attendanceLogs);
+    } catch (err) {
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
+// Post a new attendance record
+router.post('/', async (req, res) => {
+    const { rfidTag, rfidReaderId } = req.body;
+
+    // Check if the tag belongs to a student or staff
+    let person = await Student.findOne({ rfidTag });
+    if (!person) {
+        person = await Staff.findOne({ rfidTag });
+    }
+
+    if (!person) {
+        return res.status(404).json({ msg: 'RFID tag not registered.' });
+    }
+
+    const now = new Date();
+    const lateTimeThreshold = new Date();
+    lateTimeThreshold.setHours(8, 0, 0, 0);
+
+    let finalStatus = (now > lateTimeThreshold) ? 'Late' : 'Present';
+    
+    // Create new attendance record
+    const newAttendance = new Attendance({
+        rfidTag,
+        rfidReaderId,
+        studentId: person.studentId || null,
+        staffId: person.staffId || null,
+        studentName: person.fullName,
+        class: person.class || null,
+        section: person.section || null,
+        status: finalStatus,
+        timestamp: new Date()
+    });
+
+    try {
+        const savedAttendance = await newAttendance.save();
+        res.status(201).json(savedAttendance);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
+module.exports = router;
