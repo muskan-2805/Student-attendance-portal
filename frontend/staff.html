@@ -13,6 +13,8 @@
         body {
             height: 100%;
             margin: 0;
+            /* Added to prevent the entire page/body from scrolling */
+            overflow: hidden; 
         }
 
         main {
@@ -22,17 +24,24 @@
             flex-direction: column;
         }
 
-        .table-container {
+        /* * Important Fix: Changed .table-container to .table-responsive-wrapper 
+         * and updated its max-height to ensure space for the header is calculated.
+         * The scroll must happen on a parent element of the <table> itself.
+         */
+        .table-responsive-wrapper {
             flex: 1;
-            /* Max height adjusted for better layout inside iframe */
-            max-height: calc(100vh - 40px);
+            /* 100% height minus the main padding (20px top + 20px bottom) */
+            max-height: calc(100% - 40px); 
             overflow-y: auto;
         }
 
         table {
             width: 100%;
+            /* Important: Removes bottom margin so table fits nicely inside the wrapper */
+            margin-bottom: 0; 
         }
-         /* Sticky header for the table */
+        
+        /* Sticky header for the table */
         #staffTable thead th {
             position: sticky;
             top: 0;
@@ -44,23 +53,25 @@
 </head>
 
 <body>
-    <main class="container table-container">
-        <table id="staffTable" class="table table-bordered table-hover align-middle shadow-sm">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th>S.No</th>
-                    <th>Staff ID</th>
-                    <th>Full Name</th>
-                    <th>Job Title</th>
-                    <th>Department</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="staffTableBody">
+    <main class="container-fluid">
+        <div class="table-responsive-wrapper">
+            <table id="staffTable" class="table table-bordered table-hover align-middle shadow-sm">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>S.No</th>
+                        <th>Staff ID</th>
+                        <th>Full Name</th>
+                        <th>Job Title</th>
+                        <th>Department</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="staffTableBody">
                 </tbody>
-        </table>
+            </table>
+        </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
@@ -156,7 +167,7 @@
 
         // Edit button functionality (Modified to use postMessage)
         function editStaff(staffId) {
-             window.parent.postMessage({
+            window.parent.postMessage({
                 type: 'loadIframeWithParams',
                 url: 'addStaff.html',
                 params: `?id=${staffId}&edit=1` 
@@ -165,7 +176,7 @@
         
         // Filter logic (received from parent iframe)
         window.addEventListener('message', function(event) {
-             if (!event.data || typeof event.data.type === 'undefined') return;
+            if (!event.data || typeof event.data.type === 'undefined') return;
 
             const data = event.data;
             if (data.type === 'filterStaff') {

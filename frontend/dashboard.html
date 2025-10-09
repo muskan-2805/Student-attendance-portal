@@ -90,17 +90,21 @@
     <div class="my-4">
     <div class="table-responsive">
         <style>
-            .table-fixed {
-                table-layout: fixed;
-                width: 100%;
-            }
+        .table-fixed {
+            table-layout: fixed;
+            width: 100%;
+        }
 
-            .table-fixed th,
-            .table-fixed td {
-                word-wrap: break-word;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
+        .table-fixed th,
+        .table-fixed td {
+            word-wrap: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* --- यहाँ बदलाव किए गए हैं --- */
+            padding-top: 0.3rem !important; /* पैडिंग कम किया गया */
+            padding-bottom: 0.3rem !important; /* पैडिंग कम किया गया */
+            line-height: 1.2; /* लाइन-हाइट कम किया गया */
+        }
         </style>
         <table class="table table-bordered table-hover table-fixed">
             <thead class="table-light">
@@ -164,15 +168,15 @@
 
                 tbody.innerHTML += `
                     <tr>
-                        <td>${a.rfidTag || '--'}</td>
-                        <td>${a.studentId || a.staffId || '--'}</td>
-                        <td><i class="bi bi-person-circle"></i> ${a.studentName || '--'}</td>
-                        <td>${a.class || '--'}</td>
-                        <td>${a.section || '--'}</td>
-                        <td>${formattedDate}</td>
-                        <td><span class="badge bg-${badgeClass}">${a.status}</span></td>
-                        <td>${formattedTime}</td>
-                    </tr>
+                        <td>${a.rfidTag || '--'}</td>
+                        <td>${a.studentId || a.staffId || '--'}</td>
+                        <td><i class="bi bi-person-circle"></i> ${a.studentName || '--'}</td>
+                        <td>${a.class || '--'}</td>
+                        <td>${a.section || '--'}</td>
+                        <td>${formattedDate}</td>
+                        <td><span class="badge bg-${badgeClass}">${a.status}</span></td>
+                        <td>${formattedTime}</td>
+                    </tr>
                 `;
             });
             updateSummary(data);
@@ -205,22 +209,22 @@
         }
 
         document.getElementById("filterForm").addEventListener("submit", function (e) {
-            e.preventDefault();
-            const filterClass = document.getElementById("filterClass").value;
-            const filterSection = document.getElementById("filterSection").value;
-            const filterStatus = document.getElementById("filterStatus").value;
-            const filterStartDate = document.getElementById("filterStartDate").value;
-            const filterEndDate = document.getElementById("filterEndDate").value;
+            e.preventDefault();
+            const filterClass = document.getElementById("filterClass").value;
+            const filterSection = document.getElementById("filterSection").value;
+            const filterStatus = document.getElementById("filterStatus").value;
+            const filterStartDate = document.getElementById("filterStartDate").value;
+            const filterEndDate = document.getElementById("filterEndDate").value;
 
-            const filters = {};
-            if (filterClass) filters.class = filterClass;
-            if (filterSection) filters.section = filterSection;
-            if (filterStatus) filters.status = filterStatus;
-            if (filterStartDate) filters.startDate = filterStartDate;
-            if (filterEndDate) filters.endDate = filterEndDate;
+            const filters = {};
+            if (filterClass) filters.class = filterClass;
+            if (filterSection) filters.section = filterSection;
+            if (filterStatus) filters.status = filterStatus;
+            if (filterStartDate) filters.startDate = filterStartDate;
+            if (filterEndDate) filters.endDate = filterEndDate;
 
-            fetchAttendanceData(filters);
-        });
+            fetchAttendanceData(filters);
+        });
 
         // Initial load
         fetchAttendanceData();

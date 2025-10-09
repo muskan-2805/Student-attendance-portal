@@ -1,111 +1,158 @@
-// routes/auth.js
-
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Assuming User model is here
-const auth = require('../middleware/auth'); // Assuming auth middleware is here
-const bcrypt = require('bcryptjs'); // Needed for password hashing
+const User = require('../models/User'); 
+const auth = require('../middleware/auth'); 
+const bcrypt = require('bcryptjs'); 
+const jwt = require('jsonwebtoken'); 
 
-// NOTE: Add your login/register routes here if they are in this file
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || 'your_default_secret_key'; 
 
 // -------------------------------------------------------------------
-// 2. Profile Update Route (The correct, secure implementation)
+// 1. REGISTER User
 // -------------------------------------------------------------------
-router.post('/update-profile', auth, async (req, res) => {
-    // 1. ID ko hamesha token se lein (auth middleware se)
-    // Yeh user ki identity hai, jo token se aati hai.
-    const userIdFromToken = req.user.id; 
+router.post('/register', async (req, res) => {
+    const { name, email, password } = req.body; 
 
-    // 2. Request body se update fields lein
-    const { fullName, dob, gender, email, contact } = req.body; 
-
-    // Data object for update
-    const profileFields = {};
-    if (fullName) profileFields.name = fullName; // Use 'name' field for update
-    if (dob) profileFields.dob = dob;
-    if (gender) profileFields.gender = gender;
-    if (email) profileFields.email = email;
-    if (contact) profileFields.contact = contact;
-
-    if (Object.keys(profileFields).length === 0) {
-        return res.status(400).json({ success: false, msg: 'No data provided for update.' });
+    if (!name || !email || !password) {
+        return res.status(400).json({ success: false, msg: 'Please enter all fields.' });
     }
 
     try {
-        // 3. User ko token ki ID se khojein aur update karein
-        const user = await User.findByIdAndUpdate(
-            userIdFromToken, 
-            { $set: profileFields },
-            { new: true, runValidators: true } // new: true returns the updated document
-        ).select('-password'); 
+        let user = await User.findOne({ email });
+        if (user) return res.status(400).json({ success: false, msg: 'User already exists.' });
 
-        if (!user) {
-            return res.status(404).json({ success: false, msg: 'User not found or Invalid Token.' });
+        user = new User({ name, email, password });
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        await user.save();
+
+        const payload = { user: { id: user.id } };
+
+        jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
+            if (err) throw err;
+            res.status(201).json({ 
+                success: true, 
+                token,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    dob: user.dob,
+                    gender: user.gender,
+                    contact: user.contact,
+                    role: user.role,
+                    userId: user.userId
+                },
+                msg: 'Registration successful and logged in.' 
+            });
+        });
+
+    } catch (err) {
+        console.error("Registration Failed:", err.message);
+        if (err.code === 11000) {
+            return res.status(400).json({ success: false, msg: 'Email already in use.' });
         }
+        res.status(500).json({ success: false, msg: 'Server error during registration.' });
+    }
+});
 
-        // 4. Success response
-        return res.json({ 
+// -------------------------------------------------------------------
+// 2. LOGIN User
+// -------------------------------------------------------------------
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(400).json({ success: false, msg: 'Invalid Credentials' });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ success: false, msg: 'Invalid Credentials' });
+
+        const payload = { user: { id: user.id } };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+
+        // ✅ Send user object as well
+        res.json({ 
             success: true, 
-            msg: 'Profile updated successfully!', 
-            // Frontend ko naya user object bhejein
+            token, 
             user: {
-                _id: user.id,
-                name: user.name, 
+                id: user.id,
+                name: user.name,
                 email: user.email,
                 dob: user.dob,
                 gender: user.gender,
                 contact: user.contact
             }
         });
-
     } catch (err) {
-        console.error("Profile Update Failed with Error:", err); 
-        
-        if (err.name === 'CastError') {
-             // Ye error tab aayega jab token se mili ID galat format mein ho
-            return res.status(401).json({ success: false, msg: 'Authorization Error: Token is invalid.' });
-        }
-        if (err.code === 11000) {
-            return res.status(400).json({ success: false, msg: 'Email is already in use by another account.' });
-        }
-        if (err.name === 'ValidationError') {
-            return res.status(400).json({ success: false, msg: 'Data validation failed. Please check your fields.' });
-        }
+        console.error(err.message);
+        res.status(500).json({ success: false, msg: 'Server error' });
+    }
+});
 
-        res.status(500).json({ success: false, msg: 'Failed to update profile.' });
+
+// -------------------------------------------------------------------
+// 3. GET Logged-in User Data
+// -------------------------------------------------------------------
+router.get('/user', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        res.json({ success: true, user });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ success: false, msg: 'Server error.' });
     }
 });
 
 // -------------------------------------------------------------------
-// 3. Change Password Route
+// 4. UPDATE PROFILE
+// -------------------------------------------------------------------
+router.post('/update-profile', auth, async (req, res) => {
+    try {
+        const { userId, name, dob, gender, email, contact } = req.body;
+
+        let user = await User.findById(userId);
+        if (!user) return res.status(404).json({ success: false, msg: 'User not found' });
+
+        user.name = name || user.name;
+        user.dob = dob || user.dob;
+        user.gender = gender || user.gender;
+        user.email = email || user.email;
+        user.contact = contact || user.contact;
+
+        await user.save();
+
+        res.json({ success: true, msg: 'Profile updated successfully', user });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ success: false, msg: 'Server error while updating profile.' });
+    }
+});
+
+// -------------------------------------------------------------------
+// 5. CHANGE PASSWORD
 // -------------------------------------------------------------------
 router.post('/change-password', auth, async (req, res) => {
-    const userIdFromToken = req.user.id;
-    const { currentPassword, newPassword } = req.body;
-
     try {
-        let user = await User.findById(userIdFromToken);
-        if (!user) {
-            return res.status(404).json({ success: false, msg: 'User not found.' });
-        }
+        const { userId, currentPassword, newPassword } = req.body;
 
-        // Check current password
+        let user = await User.findById(userId);
+        if (!user) return res.status(404).json({ success: false, msg: 'User not found' });
+
         const isMatch = await bcrypt.compare(currentPassword, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ success: false, msg: 'Invalid current password.' });
-        }
+        if (!isMatch) return res.status(400).json({ success: false, msg: 'Current password is incorrect' });
 
-        // Hash the new password
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
 
         await user.save();
 
-        res.json({ success: true, msg: 'Password successfully changed!' });
-
+        res.json({ success: true, msg: 'Password changed successfully!' });
     } catch (err) {
-        console.error("Change Password Failed:", err);
-        res.status(500).json({ success: false, msg: 'Failed to change password.' });
+        console.error(err.message);
+        res.status(500).json({ success: false, msg: 'Server error while changing password.' });
     }
 });
 
