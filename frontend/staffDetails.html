@@ -119,7 +119,6 @@
             return;
         }
         
-        // Backend से staff data fetch करें
         try {
             const res = await fetch(`http://localhost:5000/api/staff/${staffId}`);
             if (res.ok) {
@@ -147,7 +146,6 @@
         }
     });
 
-    // Details को HTML में भरें
     function fillStaffDetails(s) {
         document.getElementById("staffName").innerText = s.fullName || '';
         document.getElementById("staffId").innerText = s.staffId || '';
@@ -169,7 +167,6 @@
         if (s.photo) document.getElementById("profilePhoto").src = s.photo;
     }
 
-    // Staff को delete करें
     async function deleteStaff(staffId) {
         if (confirm('Are you sure you want to delete this staff member?')) {
             try {
@@ -197,21 +194,18 @@
         const staffId = new URLSearchParams(window.location.search).get('id');
         const profilePhoto = document.getElementById("profilePhoto");
 
-        // FormData ka upyog karke file ko backend API par bhejenge
         const formData = new FormData();
-        formData.append('photo', file); // 'photo' key backend mein multer ke liye zaroori hai
+        formData.append('photo', file); 
 
         try {
           const res = await fetch(`http://localhost:5000/api/staff/${staffId}/photo`, {
             method: 'POST',
             body: formData,
-            // 'Content-Type' header set karne ki zaroorat nahi hai, FormData khud isko handle karta hai
           });
 
           if (res.ok) {
             const data = await res.json();
             if (data.photoUrl) {
-              // Server se mile hue naye URL se image ko update karein
               profilePhoto.src = data.photoUrl; 
               alert('Photo updated successfully!');
             }

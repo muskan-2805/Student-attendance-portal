@@ -13,7 +13,6 @@
         body {
             height: 100%;
             margin: 0;
-            /* Added to prevent the entire page/body from scrolling */
             overflow: hidden; 
         }
 
@@ -24,24 +23,17 @@
             flex-direction: column;
         }
 
-        /* * Important Fix: Changed .table-container to .table-responsive-wrapper 
-         * and updated its max-height to ensure space for the header is calculated.
-         * The scroll must happen on a parent element of the <table> itself.
-         */
         .table-responsive-wrapper {
             flex: 1;
-            /* 100% height minus the main padding (20px top + 20px bottom) */
             max-height: calc(100% - 40px); 
             overflow-y: auto;
         }
 
         table {
             width: 100%;
-            /* Important: Removes bottom margin so table fits nicely inside the wrapper */
             margin-bottom: 0; 
         }
         
-        /* Sticky header for the table */
         #staffTable thead th {
             position: sticky;
             top: 0;
@@ -79,7 +71,7 @@
         const staffTableBody = document.getElementById("staffTableBody");
         let allStaff = [];
 
-        // Backend से सभी staff को fetch करें
+        
         async function loadStaff() {
             try {
                 const res = await fetch('http://localhost:5000/api/staff');
@@ -97,11 +89,10 @@
             }
         }
 
-        // Staff को table में render करें
+        
         function renderStaff(staffToDisplay) {
             staffTableBody.innerHTML = '';
 
-            // Optional: Sort staff members (your previous logic preserved)
             staffToDisplay.sort((a, b) =>
                 (a.department || "").localeCompare(b.department || "") ||
                 (a.jobTitle || "").localeCompare(b.jobTitle || "")
@@ -135,16 +126,15 @@
             });
         }
         
-        // 🎯 NEW FUNCTION: Parent index.html को staffDetails.html लोड करने के लिए संदेश भेजें
         function viewStaffDetails(uniqueId) {
             window.parent.postMessage({
                 type: 'loadIframeWithParams',
                 url: 'staffDetails.html',
-                params: `?id=${uniqueId}` // यह ID 'staffDetails.html' को भेजी जा रही है
+                params: `?id=${uniqueId}` 
             }, '*');
         }
 
-        // Staff member को delete करें
+        
         async function deleteStaff(staffId) {
             if (confirm('Are you sure you want to delete this staff member?')) {
                 try {

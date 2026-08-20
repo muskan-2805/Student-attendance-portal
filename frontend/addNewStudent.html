@@ -171,7 +171,6 @@
 
         const form = document.getElementById('studentForm');
 
-        // Edit mode ke liye, form ko fill karein
         if (isEditMode && studentId) {
             document.getElementById('formHeading').innerText = "Edit Student Details";
             document.getElementById('studentId').readOnly = true;
@@ -190,10 +189,6 @@
                                 input.value = student[key] || '';
                             }
                         });
-                        // This specific field mapping is not needed if backend sends correct key
-                        // if (document.getElementById('name')) {
-                        //     document.getElementById('name').value = student.fullName || '';
-                        // }
                     } else {
                         alert('Student not found!');
                         window.location.href = 'student.html';
@@ -217,9 +212,6 @@
                 formData[key] = value;
             });
             
-            // Remove the incorrect mapping that was causing the error
-            // The HTML form field is already named "name" which is correct
-            // The `name` field is passed directly to the backend
             
             const url = isEditMode ? `http://localhost:5000/api/students/${studentId}` : 'http://localhost:5000/api/students';
             const method = isEditMode ? 'PUT' : 'POST';

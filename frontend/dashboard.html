@@ -100,10 +100,9 @@
             word-wrap: break-word;
             overflow: hidden;
             text-overflow: ellipsis;
-            /* --- यहाँ बदलाव किए गए हैं --- */
-            padding-top: 0.3rem !important; /* पैडिंग कम किया गया */
-            padding-bottom: 0.3rem !important; /* पैडिंग कम किया गया */
-            line-height: 1.2; /* लाइन-हाइट कम किया गया */
+            padding-top: 0.3rem !important; 
+            padding-bottom: 0.3rem !important; 
+            line-height: 1.2; 
         }
         </style>
         <table class="table table-bordered table-hover table-fixed">
@@ -229,7 +228,6 @@
         // Initial load
         fetchAttendanceData();
 
-        // Tell the parent to update the title
         if (window.parent) {
             window.parent.postMessage({
                 type: 'updateTitle',

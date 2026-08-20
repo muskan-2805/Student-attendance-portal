@@ -136,7 +136,7 @@
         'addStaff.html': 'staff.html',
         'studentDetails.html': 'student.html',
         'staffDetails.html': 'staff.html',
-        'viewAttendance.html': 'device.html' // ✅ 'viewAttendance.html' का पैरेंट 'device.html' है
+        'viewAttendance.html': 'device.html' 
     };
 
     function logout() {
@@ -153,22 +153,19 @@
     function loadIframe(url) {
         iframe.src = url;
         
-        // 🎯 FIX 1: URL से Query Parameters (?class=X) को हटाएँ ताकि मैपिंग सही हो
+    
         const urlParts = url.split('?');
-        const urlFileName = urlParts[0].split('/').pop(); // 'viewAttendance.html' मिलेगा
+        const urlFileName = urlParts[0].split('/').pop(); 
         
         const parentPage = backButtonMappings[urlFileName];
 
         // Set back button functionality
         if (parentPage) {
-            // यदि यह कोई Sub-Page है, तो पैरेंट पेज पर वापस जाओ (जैसे devices.html)
             backButton.onclick = () => loadIframe(parentPage);
             backButtonContainer.style.display = 'block';
         } else if (urlFileName === 'dashboard.html') {
             backButtonContainer.style.display = 'none';
         } else {
-            // यह मुख्य मेनू पेज (जैसे student.html, device.html) के लिए है
-            // इसे अभी के लिए डैशबोर्ड पर वापस ले जाने के लिए सेट करें, या इसे छिपा दें।
             backButtonContainer.style.display = 'block';
             backButton.onclick = () => loadIframe('dashboard.html');
         }
@@ -178,13 +175,12 @@
         loadPageControls(urlFileName);
 
         // Update active link in sidebar
-        const baseUrlFileName = urlFileName.split('?')[0]; // Query parameter हटा दिया
+        const baseUrlFileName = urlFileName.split('?')[0]; 
 
         navLinks.forEach(link => {
             link.classList.remove('active-link');
             const linkFileName = link.getAttribute('onclick').match(/'(.*?)'/)[1];
             
-            // तुलना करते समय, base file name का उपयोग करें (ताकि viewAttendance पर Devices हाईलाइट हो)
             if (linkFileName === baseUrlFileName || backButtonMappings[baseUrlFileName] === linkFileName) {
                 link.classList.add('active-link');
             }
@@ -249,13 +245,12 @@
             pageTitle.textContent = data.title;
         } 
         
-        // 🎯 Handle the request to load a page with query parameters
         if (data.type === 'loadIframeWithParams') {
             loadIframeWithParams(data.url, data.params);
         }
     });
 
-    // Handle initial load
+    
     document.addEventListener('DOMContentLoaded', () => {
         loadIframe('dashboard.html');
     });
