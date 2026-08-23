@@ -90,7 +90,8 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Contact No</label>
-                            <input type="tel" class="form-control" name="contact" id="contact">
+                            <input type="tel" class="form-control" name="contact" id="contact"
+                                   pattern="[0-9]{10}" maxlength="10" title="Enter a 10-digit phone number">
                         </div>
                         <div class="col-12">
                             <label class="form-label">Address</label>
@@ -106,7 +107,8 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Pincode</label>
-                            <input type="text" class="form-control" name="pincode" id="pincode">
+                            <input type="text" class="form-control" name="pincode" id="pincode"
+                                   pattern="[0-9]{6}" maxlength="6" title="Enter a 6-digit pincode">
                         </div>
                     </div>
                 </fieldset>
@@ -124,11 +126,13 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Father's Mobile</label>
-                            <input type="tel" class="form-control" name="fatherMobile" id="fatherMobile">
+                            <input type="tel" class="form-control" name="fatherMobile" id="fatherMobile"
+                                   pattern="[0-9]{10}" maxlength="10" title="Enter a 10-digit phone number">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Mother's Mobile</label>
-                            <input type="tel" class="form-control" name="motherMobile" id="motherMobile">
+                            <input type="tel" class="form-control" name="motherMobile" id="motherMobile"
+                                   pattern="[0-9]{10}" maxlength="10" title="Enter a 10-digit phone number">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Father's Occupation</label>
@@ -162,6 +166,7 @@
         </div>
     </main>
 
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -175,7 +180,7 @@
             document.getElementById('formHeading').innerText = "Edit Student Details";
             document.getElementById('studentId').readOnly = true;
 
-            fetch(`http://localhost:5000/api/students/${studentId}`)
+            fetch(`${API_BASE_URL}/api/students/${studentId}`)
                 .then(res => res.json())
                 .then(student => {
                     if (student) {
@@ -204,6 +209,12 @@
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
 
+            // Basic client-side validation before hitting the API (fix #19)
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
             const formData = {};
             new FormData(form).forEach((value, key) => {
                 if (key === 'photo' && (value instanceof File) && value.name === '') {
@@ -211,9 +222,8 @@
                 }
                 formData[key] = value;
             });
-            
-            
-            const url = isEditMode ? `http://localhost:5000/api/students/${studentId}` : 'http://localhost:5000/api/students';
+
+            const url = isEditMode ? `${API_BASE_URL}/api/students/${studentId}` : `${API_BASE_URL}/api/students`;
             const method = isEditMode ? 'PUT' : 'POST';
 
             try {

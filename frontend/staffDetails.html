@@ -108,6 +108,7 @@
             </div>
         </div>
     </div>
+<script src="config.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", async () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -120,7 +121,7 @@
         }
         
         try {
-            const res = await fetch(`http://localhost:5000/api/staff/${staffId}`);
+            const res = await fetch(`${API_BASE_URL}/api/staff/${staffId}`);
             if (res.ok) {
                 const staff = await res.json();
                 fillStaffDetails(staff);
@@ -170,7 +171,7 @@
     async function deleteStaff(staffId) {
         if (confirm('Are you sure you want to delete this staff member?')) {
             try {
-                const res = await fetch(`http://localhost:5000/api/staff/${staffId}`, {
+                const res = await fetch(`${API_BASE_URL}/api/staff/${staffId}`, {
                     method: 'DELETE',
                 });
                 if (res.ok) {
@@ -198,7 +199,7 @@
         formData.append('photo', file); 
 
         try {
-          const res = await fetch(`http://localhost:5000/api/staff/${staffId}/photo`, {
+          const res = await fetch(`${API_BASE_URL}/api/staff/${staffId}/photo`, {
             method: 'POST',
             body: formData,
           });

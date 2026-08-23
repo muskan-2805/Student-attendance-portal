@@ -58,7 +58,8 @@
                         </div>
                         <div class="col">
                           <label for="contact" class="form-label">Contact Number</label>
-                          <input id="contact" class="form-control">
+                          <input id="contact" class="form-control" pattern="[0-9]{10}" maxlength="10"
+                                 title="Enter a 10-digit phone number">
                         </div>
                       </div>
                     </div>
@@ -98,11 +99,11 @@
                   </div>
                   <div class="form-group">
                     <label for="newPassword">New Password</label>
-                    <input type="password" class="form-control" id="newPassword">
+                    <input type="password" class="form-control" id="newPassword" minlength="6">
                   </div>
                   <div class="form-group mb-3">
                     <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" class="form-control" id="confirmPassword">
+                    <input type="password" class="form-control" id="confirmPassword" minlength="6">
                   </div>
                   <small class="text-muted">
                     Password must: 8+ chars, upper+lower, 1 number/symbol, match both fields.
@@ -121,6 +122,7 @@
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // On page load -> user info populate
@@ -171,6 +173,12 @@
     document.getElementById('profileForm').addEventListener('submit', async (event) => {
       event.preventDefault();
 
+      // Basic client-side validation before hitting the API 
+      if (!event.target.checkValidity()) {
+        event.target.reportValidity();
+        return;
+      }
+
       const userId = document.getElementById('userId').value;
       const fullName = document.getElementById('fullName').value;
       const dob = document.getElementById('dob').value;
@@ -181,7 +189,7 @@
       const token = localStorage.getItem('token');
 
       try {
-        const response = await fetch('http://localhost:5000/api/auth/update-profile', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/update-profile`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -216,11 +224,15 @@
         alert('Passwords do not match!');
         return;
       }
+      if (newPassword.length < 6) {
+        alert('New password must be at least 6 characters long.');
+        return;
+      }
 
       const token = localStorage.getItem('token');
 
       try {
-        const response = await fetch('http://localhost:5000/api/auth/change-password', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

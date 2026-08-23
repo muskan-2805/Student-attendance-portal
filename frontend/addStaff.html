@@ -87,11 +87,13 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Personal Contact</label>
-                            <input type="tel" class="form-control" name="personalContact" id="personalContact">
+                            <input type="tel" class="form-control" name="personalContact" id="personalContact"
+                                   pattern="[0-9]{10}" maxlength="10" title="Enter a 10-digit phone number">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Alternative Contact</label>
-                            <input type="tel" class="form-control" name="altContact" id="altContact">
+                            <input type="tel" class="form-control" name="altContact" id="altContact"
+                                   pattern="[0-9]{10}" maxlength="10" title="Enter a 10-digit phone number">
                         </div>
                         <div class="col-12">
                             <label class="form-label">Address</label>
@@ -107,7 +109,8 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Pincode</label>
-                            <input type="text" class="form-control" name="pincode" id="pincode">
+                            <input type="text" class="form-control" name="pincode" id="pincode"
+                                   pattern="[0-9]{6}" maxlength="6" title="Enter a 6-digit pincode">
                         </div>
                     </div>
                 </fieldset>
@@ -152,6 +155,7 @@
         </div>
     </main>
 
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -166,7 +170,7 @@
                 heading.innerText = "Edit Staff Details";
                 document.getElementById('staffId').readOnly = true;
                 try {
-                    const res = await fetch(`http://localhost:5000/api/staff/${staffId}`);
+                    const res = await fetch(`${API_BASE_URL}/api/staff/${staffId}`);
                     if (res.ok) {
                         const staff = await res.json();
                         Object.keys(staff).forEach(key => {
@@ -192,13 +196,20 @@
         // Form submission handler
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
+
+            // Basic client-side validation before hitting the API 
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
             const staffData = {};
             new FormData(form).forEach((value, key) => staffData[key] = value);
 
             try {
                 let res;
                 if (isEditMode) {
-                    res = await fetch(`http://localhost:5000/api/staff/${staffId}`, {
+                    res = await fetch(`${API_BASE_URL}/api/staff/${staffId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(staffData)
@@ -210,7 +221,7 @@
                         alert("Failed to update staff: " + error.msg);
                     }
                 } else {
-                    res = await fetch('http://localhost:5000/api/staff', {
+                    res = await fetch(`${API_BASE_URL}/api/staff`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(staffData)

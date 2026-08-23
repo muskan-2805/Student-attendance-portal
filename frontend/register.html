@@ -21,7 +21,9 @@
             <input type="email" class="form-control" id="email" placeholder="Email" required>
           </div>
           <div class="mb-3">
-            <input type="password" class="form-control" id="password" placeholder="Password" required>
+            <input type="password" class="form-control" id="password" placeholder="Password (min 6 characters)"
+                   minlength="6" required>
+            <div class="form-text">Password must be at least 6 characters.</div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Register</button>
         </form>
@@ -31,26 +33,30 @@
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
-// register.html
 document.getElementById("registerForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    
-    // Get values from form inputs
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
+    // Basic client-side validation before hitting the API (fix #19)
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters long.");
+        return;
+    }
+
     try {
-        // Send data to the backend API
-        const res = await fetch("http://localhost:5000/api/auth/register", {
+        const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ name, email, password }),
         });
-        
+
         const data = await res.json();
 
         if (res.ok) {
