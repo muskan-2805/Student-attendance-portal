@@ -1,23 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); 
-const auth = require('../middleware/auth'); 
-const bcrypt = require('bcryptjs'); 
-const jwt = require('jsonwebtoken'); 
+const User = require('../models/User');
+const auth = require('../middleware/authMiddleware');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your_default_secret_key'; 
 
-// -------------------------------------------------------------------
-// 1. REGISTER User
-// -------------------------------------------------------------------
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body; 
 
     if (!name || !email || !password) {
         return res.status(400).json({ success: false, msg: 'Please enter all fields.' });
     }
-
     try {
         let user = await User.findOne({ email });
         if (user) return res.status(400).json({ success: false, msg: 'User already exists.' });
@@ -28,7 +24,6 @@ router.post('/register', async (req, res) => {
         await user.save();
 
         const payload = { user: { id: user.id } };
-
         jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
             if (err) throw err;
             res.status(201).json({ 
@@ -47,7 +42,6 @@ router.post('/register', async (req, res) => {
                 msg: 'Registration successful and logged in.' 
             });
         });
-
     } catch (err) {
         console.error("Registration Failed:", err.message);
         if (err.code === 11000) {
@@ -57,12 +51,8 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// -------------------------------------------------------------------
-// 2. LOGIN User
-// -------------------------------------------------------------------
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-
     try {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ success: false, msg: 'Invalid Credentials' });
@@ -73,7 +63,6 @@ router.post('/login', async (req, res) => {
         const payload = { user: { id: user.id } };
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
 
-        // ✅ Send user object as well
         res.json({ 
             success: true, 
             token, 
@@ -92,10 +81,6 @@ router.post('/login', async (req, res) => {
     }
 });
 
-
-// -------------------------------------------------------------------
-// 3. GET Logged-in User Data
-// -------------------------------------------------------------------
 router.get('/user', auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -106,13 +91,9 @@ router.get('/user', auth, async (req, res) => {
     }
 });
 
-// -------------------------------------------------------------------
-// 4. UPDATE PROFILE
-// -------------------------------------------------------------------
 router.post('/update-profile', auth, async (req, res) => {
     try {
         const { userId, name, dob, gender, email, contact } = req.body;
-
         let user = await User.findById(userId);
         if (!user) return res.status(404).json({ success: false, msg: 'User not found' });
 
@@ -121,7 +102,6 @@ router.post('/update-profile', auth, async (req, res) => {
         user.gender = gender || user.gender;
         user.email = email || user.email;
         user.contact = contact || user.contact;
-
         await user.save();
 
         res.json({ success: true, msg: 'Profile updated successfully', user });
@@ -131,13 +111,9 @@ router.post('/update-profile', auth, async (req, res) => {
     }
 });
 
-// -------------------------------------------------------------------
-// 5. CHANGE PASSWORD
-// -------------------------------------------------------------------
 router.post('/change-password', auth, async (req, res) => {
     try {
         const { userId, currentPassword, newPassword } = req.body;
-
         let user = await User.findById(userId);
         if (!user) return res.status(404).json({ success: false, msg: 'User not found' });
 
@@ -146,7 +122,6 @@ router.post('/change-password', auth, async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
-
         await user.save();
 
         res.json({ success: true, msg: 'Password changed successfully!' });
